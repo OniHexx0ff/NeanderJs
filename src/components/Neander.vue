@@ -10,12 +10,15 @@
           <div>PC</div>
           <div>{{ pc_value }}</div>
         </div>
-
-        <div class="visor__button-holder">
-          <button @click="compile()">Compilar programa</button>
-          <button v-if="isCompiled" @click="stepFn(1)">+</button>
-          <button v-if="isCompiled" @click="stepFn(-1)">-</button>
+        <div class="visor__holder">
+          <div>N</div>
+          <div>{{ acc_value }}</div>
         </div>
+        <div class="visor__holder">
+          <div>Z</div>
+          <div>{{ pc_value }}</div>
+        </div>
+
       </div>
 
       <div class="editor">
@@ -23,7 +26,16 @@
       </div>
     </div>
     <div class="right">
-      <ul @click="manageClick($event)" ref="data_ref"></ul>
+      <ul ref="data_ref"></ul>
+    </div>
+  </div>
+  <div class="buttons">
+    <div class="buttons__holder">
+      <button @click="compile()">Rodar programa</button>
+    </div>
+    <div class="buttons__holder buttons__holder-step">
+      <button class="button-step" :class="{'button-active': isCompiled}" @click="step(1)">+</button>
+      <button class="button-step" :class="{'button-active': isCompiled}" @click="step(-1)">-</button>
     </div>
   </div>
 </template>
@@ -34,19 +46,28 @@ import { onMounted, ref } from "vue";
 import Manager from "../utils/logicProcessor";
 const data_ref = ref(null);
 const editor_ref = ref(null);
-const acc_value = ref("000");
-const pc_value = ref("000");
+const acc_value = ref("0");
+const pc_value = ref("0");
 const isCompiled = ref(false);
-const stepFn = ref(() => {});
 let manager;
-let lastSelected;
-let lastInput;
+let lastTarget;
+let currentTarget;
 
-function _keyPressed(event) {
-  if (+event.target.value > 256) event.target.value = 256;
-  if (+event.target.value < 0) event.target.value = 0;
+function step(direction) {
+  const { acc, pc, memory } = manager.step(direction);
+  this.acc_value = acc;
+  this.pc_value = pc;
+}
 
-  lastSelected.innerHTML = event.target.value;
+function _setCaretPosition(el, position) {
+  const range = document.createRange();
+  const sel = window.getSelection();
+
+  range.setStart(el.childNodes[0], position);
+  range.collapse(true);
+
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
 
 function _changeData(memory) {
@@ -57,6 +78,19 @@ function _changeData(memory) {
 }
 
 function _parse(str) {
+  let instruction_map = new Map([
+    ["nop", "00"],
+    ["sta", "01"],
+    ["lda", "02"],
+    ["add", "03"],
+    ["or", "04"],
+    ["and", "05"],
+    ["not", "06"],
+    ["jmp", "08"],
+    ["jn", "09"],
+    ["jz", "10"],
+    ["hlt", "15"],
+  ]);
   let result = [];
   let lastChar = "";
   let currentChar;
@@ -75,48 +109,72 @@ function _parse(str) {
       lastChar = currentChar;
     }
   }
-  if (str[str.length - 1] != " ") result.push(str[str.length - 1]);
-  result = result.join("").toLowerCase().split(" ");
-  const instructions = result.filter(function (number) {
-    return number % 2 !== 0;
-  });
-  const address = result.filter(function (number) {
-    return number % 2 == 0;
-  });
-  return [instructions, address];
+  if (str.length > 0 && str[str.length - 1] != " ")
+    result.push(str[str.length - 1]);
+
+  if (str.length > 0) {
+    result = result
+      .join("")
+      .toLowerCase()
+      .split(" ")
+      .map((tk) => (instruction_map.get(tk) ? instruction_map.get(tk) : tk));
+  }
+  return result;
+}
+
+function _resetCell(target) {
+  if (!target.innerHTML.trim().length || target.innerHTML.trim() === "<br>")
+    target.innerHTML = "00";
+}
+
+function _keyDown(event) {
+  console.log(event.key.charCodeAt())
+  if (event.key != "Delete" && event.key != "Backspace") {
+    if (
+      !(
+        (event.key.toLowerCase().charCodeAt() >= 97 && event.key.toLowerCase().charCodeAt() <= 102) ||
+        (event.key.toLowerCase().charCodeAt() >= 48 && event.key.toLowerCase().charCodeAt() <= 57)
+      )
+    )
+      event.preventDefault();
+  }
+}
+
+function _keyUp({ target }) {
+  if (target.innerHTML.length > 3) {
+    target.innerHTML = target.innerHTML.slice(0, 3);
+    _setCaretPosition(target, 3);
+  }
 }
 
 function manageClick({ target }) {
-  target = target.closest(".cell");
-  if (!target) return;
-  if (lastSelected) {
-    lastSelected.style.display = "flex";
-    lastInput.removeEventListener("keyup", _keyPressed);
-    lastInput.remove();
+  const cell = target.closest(".cell");
+  if (lastTarget) {
+    lastTarget.removeEventListener("keydown", _keyDown);
+    lastTarget.removeEventListener("keyup", _keyUp);
   }
-  const input = document.createElement("input");
-  target.style.display = "none";
-  target.parentElement.insertBefore(input, target);
-  input.focus();
-  input.addEventListener("keyup", _keyPressed);
-  lastSelected = target;
-  lastInput = input;
+  if (lastTarget && lastTarget !== target) _resetCell(lastTarget);
+  console.log(cell);
+  if (!cell) return;
+  cell.addEventListener("keydown", _keyDown);
+  cell.addEventListener("keyup", _keyUp);
+  lastTarget = cell;
 }
 function generateDataCells() {
   let cellNumber = 0;
-  for (let i = 0; i < 256; i++) {
+  for (let i = 0; i < 32; i++) {
     const holder = document.createElement("li");
     for (let j = 0; j < 8; j++) {
       if (j % 8 == 0)
         holder.insertAdjacentHTML(
           "beforeend",
           `<div class="cell indicator">
-        ${i.toString(16).padStart(2, "0").toUpperCase()}:
+        ${(i * 8 + j).toString(16).padStart(2, "0").toUpperCase()}:
         </div> <div class="spacer"></div>`
         );
       holder.insertAdjacentHTML(
         "beforeend",
-        `<div data-index="${cellNumber}" class='cell'>00</div>`
+        `<div data-index="${cellNumber}" contenteditable="true" class='cell'>00</div>`
       );
       cellNumber++;
     }
@@ -124,42 +182,30 @@ function generateDataCells() {
   }
 }
 
-function generateStep(instruction, address) {
-  let i = 0;
-  return function fn(...args) {
-    if (args[0] == 1) {
-      if (instruction[i] == "hlt") return;
-      const { acc, pc, memory } = manager.do(instruction[i], address[i]);
-      this.acc_value = acc;
-      this.pc_value = pc;
-      i = pc;
-      _changeData(memory);
-    } else {
-      const { acc, pc, memory } = manager.undo();
-      this.acc_value = acc;
-      this.pc_value = pc;
-      i = pc;
-      _changeData(memory);
-    }
-  };
-}
-
 function compile() {
-  manager.do(
-    "setMemory",
+  const tokens = _parse(editor_ref.value.code.trim());
+  const htmlData = Array.from(
+    document.querySelectorAll(".cell:not(.indicator)")
+  );
+  console.log(tokens);
+  if (tokens.length) {
+    for (let index = 0; index < tokens.length; index++) {
+      htmlData[index].innerHTML = tokens[index];
+    }
+  }
+  manager.setMemory(
     Array.from(
       document.querySelectorAll(".cell:not(.indicator)"),
-      (el) => +el.innerHTML
+      (el) => el.innerHTML
     )
   );
-  const [instruction, address] = _parse(editor_ref.value.code.trim());
-  stepFn.value = generateStep(instruction, address);
   isCompiled.value = true;
 }
 
 onMounted(() => {
   generateDataCells();
   manager = new Manager();
+  window.addEventListener("click", manageClick);
 });
 </script>
 
@@ -196,40 +242,69 @@ onMounted(() => {
 }
 
 .visor {
-  background-color: red;
+  background-color: white;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: wrap;
   padding: 1rem;
   flex-basis: 70%;
   height: 200px;
-  /* background-color: yellow; */
 }
 .visor__holder {
   height: 60px;
   width: 300px;
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   align-items: center;
   font-size: 40px;
   font-weight: 800;
   /* background-color: green; */
 }
-.visor__button-holder {
+.buttons{
+  background-color: green;
+  height: 120px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1;
+}
+.buttons__holder {
+  /* background-color: red; */
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.visor__button-holder button {
+.buttons__holder-step{
+  justify-content: space-evenly;
+}
+button {
+  background-color: white;
+  border-radius: 0.28em;
   padding: 1rem;
   font-size: 20px;
   cursor: pointer;
 }
-.visor__holder div {
-  /* background-color: red; */
-  text-align: center;
+
+.button-step{
+  background-color: gray;
+  border: none;
+  cursor: default;
+  pointer-events: none;
 }
+.button-active{
+  background-color: white;
+  cursor: pointer;
+  pointer-events: all;
+}
+
+.visor__holder div {
+  width: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 </style>
