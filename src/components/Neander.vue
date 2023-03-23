@@ -12,11 +12,11 @@
         </div>
         <div class="visor__holder">
           <div>N</div>
-          <div> 0 </div>
+          <div> {{n_value }} </div>
         </div>
         <div class="visor__holder">
           <div>Z</div>
-          <div> 0 </div>
+          <div> {{ z_value }} </div>
         </div>
 
       </div>
@@ -48,14 +48,19 @@ const data_ref = ref(null);
 const editor_ref = ref(null);
 const acc_value = ref("0");
 const pc_value = ref("0");
+const n_value = ref("0");
+const z_value = ref("1");
 const isCompiled = ref(false);
 let manager;
 let lastTarget;
 
 function step(direction) {
-  const { acc, pc, memory } = manager.step(direction);
-  this.acc_value = acc;
-  this.pc_value = pc;
+  const { acc, pc, memory,n,z  } = manager.step(direction);
+  acc_value.value = acc;
+  pc_value.value = pc;
+  n_value.value = n;
+  z_value.value = z;
+  _changeData(memory)
 }
 
 function _setCaretPosition(el, position) {
