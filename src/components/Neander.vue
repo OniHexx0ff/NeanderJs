@@ -12,11 +12,11 @@
         </div>
         <div class="visor__holder">
           <div>N</div>
-          <div>{{ acc_value }}</div>
+          <div> 0 </div>
         </div>
         <div class="visor__holder">
           <div>Z</div>
-          <div>{{ pc_value }}</div>
+          <div> 0 </div>
         </div>
 
       </div>
@@ -51,7 +51,6 @@ const pc_value = ref("0");
 const isCompiled = ref(false);
 let manager;
 let lastTarget;
-let currentTarget;
 
 function step(direction) {
   const { acc, pc, memory } = manager.step(direction);
