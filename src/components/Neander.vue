@@ -262,6 +262,7 @@ onMounted(() => {
   font-weight: 800;
   /* background-color: green; */
 }
+
 .buttons{
   background-color: green;
   height: 120px;
@@ -280,17 +281,17 @@ onMounted(() => {
 .buttons__holder-step{
   justify-content: space-evenly;
 }
+
 button {
   background-color: white;
   border-radius: 0.28em;
   padding: 1rem;
   font-size: 20px;
   cursor: pointer;
+  border: none;
 }
-
 .button-step{
   background-color: gray;
-  border: none;
   cursor: default;
   pointer-events: none;
 }
