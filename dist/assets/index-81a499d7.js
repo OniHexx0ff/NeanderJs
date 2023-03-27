@@ -24756,17 +24756,17 @@ class Manager {
     this.end = false;
   }
   setMemory(memory) {
-    console.log(memory);
+    ;
     this.memory = memory;
   }
   step(direction) {
     if (direction > 0) {
       if (this.end)
         return this.items.at(-1);
-      console.log(this.memory[this.tracker]);
+      ;
       return this._do(this.memory[this.tracker]);
     } else {
-      console.log(this.memory[this.tracker]);
+      ;
       return this._undo();
     }
   }
@@ -24788,9 +24788,9 @@ class Manager {
   _undo() {
     if (this.items.length <= 0)
       return this._getCurrentStatus();
-    console.log(this.items.length);
+    ;
     const { acc, pc, memory, end, tracker, z: z2, n } = this.items.pop();
-    console.log(this.items);
+    ;
     this.acc = acc;
     this.pc = pc;
     this.memory = memory;
@@ -24963,7 +24963,7 @@ const _sfc_main$3 = {
         target.innerHTML = "00";
     }
     function _keyDown(event) {
-      console.log(event.key.charCodeAt());
+      ;
       if (event.key != "Delete" && event.key != "Backspace") {
         if (!(event.key.toLowerCase().charCodeAt() >= 97 && event.key.toLowerCase().charCodeAt() <= 102 || event.key.toLowerCase().charCodeAt() >= 48 && event.key.toLowerCase().charCodeAt() <= 57))
           event.preventDefault();
@@ -24983,7 +24983,7 @@ const _sfc_main$3 = {
       }
       if (lastTarget && lastTarget !== target)
         _resetCell(lastTarget);
-      console.log(cell);
+      ;
       if (!cell)
         return;
       cell.addEventListener("keydown", _keyDown);
@@ -25016,7 +25016,7 @@ const _sfc_main$3 = {
       const htmlData = Array.from(
         document.querySelectorAll(".cell:not(.indicator)")
       );
-      console.log(tokens);
+      ;
       if (tokens.length) {
         for (let index = 0; index < tokens.length; index++) {
           htmlData[index].innerHTML = tokens[index];
