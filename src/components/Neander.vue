@@ -51,12 +51,22 @@
       </div>
 
       <div v-if="instruction_mode == 'pp' " class="controls__holder">
-        <button class="button-step" :class="{disabled: !is_compiled}" @click="step(-1)"> &lt-</button>
-        <button class="button-step" :class="{disabled: !is_compiled}" @click="step(1)"> -&gt</button>
+        <button class="button-step" :class="{disabled: !is_compiled}" @click="step(-1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+               stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15m0 0l6.75 6.75M4.5 12l6.75-6.75"/>
+          </svg>
+        </button>
+        <button class="button-step" :class="{disabled: !is_compiled}" @click="step(1)">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5}
+               stroke="currentColor" className="w-6 h-6">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"/>
+          </svg>
+        </button>
       </div>
       <div v-else-if="instruction_mode == 'at'" class="controls__holder">
-        <button class="button-step" :class="{disabled: !is_compiled}" @click="run()"> Executar</button>
-        <button class="button-step" :class="{disabled: !is_compiled}" @click="stop()"> Parar</button>
+        <button  :class="{disabled: !is_compiled}" @click="run()"> Executar</button>
+        <button  :class="{disabled: !is_compiled}" @click="stop()"> Parar</button>
       </div>
 
     </div>
@@ -195,7 +205,7 @@ function _keyUp({target}) {
   }
 }
 
-function _updateFromProcessor(values){
+function _updateFromProcessor(values) {
   acc_value.value = values.acc;
   pc_value.value = values.pc;
   n_value.value = values.n;
@@ -203,9 +213,10 @@ function _updateFromProcessor(values){
   _changeData(values.memory)
 }
 
-function _manageExecution(){
+function _manageExecution() {
   current_interval.value = setInterval(() => step(1), parseFloat(instruction_time_ref.value) * 1000)
 }
+
 function radioChanged(event) {
   instruction_mode.value = event.target.value
 }
@@ -241,14 +252,16 @@ function compile() {
   is_compiled.value = true;
 }
 
-function reset(){
+function reset() {
   is_compiled.value = false
   _updateFromProcessor(manager.reset())
 }
-function run(){
- _manageExecution()
+
+function run() {
+  _manageExecution()
 }
-function stop(){
+
+function stop() {
   clearInterval(current_interval.value)
 }
 
@@ -340,6 +353,11 @@ button {
   color: var(--primary-color);
   font-size: 1rem;
   display: flex;
+}
+.button-step svg{
+  height: 20px;
+  stroke-width: 3px;
+  color: var(--primary-color);
 }
 
 .controls {
