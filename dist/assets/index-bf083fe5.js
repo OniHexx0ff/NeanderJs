@@ -1,3 +1,9 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
 (function polyfill() {
   const relList = document.createElement("link").relList;
   if (relList && relList.supports && relList.supports("modulepreload")) {
@@ -1950,6 +1956,37 @@ const onRenderTracked = createHook(
 );
 function onErrorCaptured(hook, target = currentInstance) {
   injectHook("ec", hook, target);
+}
+function withDirectives(vnode, directives) {
+  const internalInstance = currentRenderingInstance;
+  if (internalInstance === null) {
+    return vnode;
+  }
+  const instance = getExposeProxy(internalInstance) || internalInstance.proxy;
+  const bindings = vnode.dirs || (vnode.dirs = []);
+  for (let i = 0; i < directives.length; i++) {
+    let [dir, value, arg, modifiers2 = EMPTY_OBJ] = directives[i];
+    if (dir) {
+      if (isFunction(dir)) {
+        dir = {
+          mounted: dir,
+          updated: dir
+        };
+      }
+      if (dir.deep) {
+        traverse(value);
+      }
+      bindings.push({
+        dir,
+        instance,
+        value,
+        oldValue: void 0,
+        arg,
+        modifiers: modifiers2
+      });
+    }
+  }
+  return vnode;
 }
 function invokeDirectiveHook(vnode, prevVNode, instance, name2) {
   const bindings = vnode.dirs;
@@ -4097,6 +4134,9 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
 function createTextVNode(text = " ", flag = 0) {
   return createVNode(Text$1, null, text, flag);
 }
+function createCommentVNode(text = "", asBlock = false) {
+  return asBlock ? (openBlock(), createBlock(Comment, null, text)) : createVNode(Comment, null, text);
+}
 function normalizeVNode(child) {
   if (child == null || typeof child === "boolean") {
     return createVNode(Comment);
@@ -4767,6 +4807,72 @@ function shouldSetAsProp(el, key, value, isSVG) {
   }
   return key in el;
 }
+const getModelAssigner = (vnode) => {
+  const fn = vnode.props["onUpdate:modelValue"] || false;
+  return isArray(fn) ? (value) => invokeArrayFns(fn, value) : fn;
+};
+function onCompositionStart(e) {
+  e.target.composing = true;
+}
+function onCompositionEnd(e) {
+  const target = e.target;
+  if (target.composing) {
+    target.composing = false;
+    target.dispatchEvent(new Event("input"));
+  }
+}
+const vModelText = {
+  created(el, { modifiers: { lazy, trim, number: number2 } }, vnode) {
+    el._assign = getModelAssigner(vnode);
+    const castToNumber = number2 || vnode.props && vnode.props.type === "number";
+    addEventListener(el, lazy ? "change" : "input", (e) => {
+      if (e.target.composing)
+        return;
+      let domValue = el.value;
+      if (trim) {
+        domValue = domValue.trim();
+      }
+      if (castToNumber) {
+        domValue = looseToNumber(domValue);
+      }
+      el._assign(domValue);
+    });
+    if (trim) {
+      addEventListener(el, "change", () => {
+        el.value = el.value.trim();
+      });
+    }
+    if (!lazy) {
+      addEventListener(el, "compositionstart", onCompositionStart);
+      addEventListener(el, "compositionend", onCompositionEnd);
+      addEventListener(el, "change", onCompositionEnd);
+    }
+  },
+  // set value on mounted so it's after min/max for type="range"
+  mounted(el, { value }) {
+    el.value = value == null ? "" : value;
+  },
+  beforeUpdate(el, { value, modifiers: { lazy, trim, number: number2 } }, vnode) {
+    el._assign = getModelAssigner(vnode);
+    if (el.composing)
+      return;
+    if (document.activeElement === el && el.type !== "range") {
+      if (lazy) {
+        return;
+      }
+      if (trim && el.value.trim() === value) {
+        return;
+      }
+      if ((number2 || el.type === "number") && looseToNumber(el.value) === value) {
+        return;
+      }
+    }
+    const newValue = value == null ? "" : value;
+    if (el.value !== newValue) {
+      el.value = newValue;
+    }
+  }
+};
 const rendererOptions = /* @__PURE__ */ extend$1({ patchProp }, nodeOps);
 let renderer;
 function ensureRenderer() {
@@ -24697,7 +24803,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _sfc_main$4 = defineComponent({
+const _sfc_main$3 = defineComponent({
   components: {
     Codemirror: T
   },
@@ -24716,7 +24822,7 @@ const _sfc_main$4 = defineComponent({
     };
   }
 });
-function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
+function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_codemirror = resolveComponent("codemirror");
   return openBlock(), createBlock(_component_codemirror, {
     modelValue: _ctx.code,
@@ -24730,48 +24836,57 @@ function _sfc_render$1(_ctx, _cache, $props, $setup, $data, $options) {
     onReady: _ctx.handleReady
   }, null, 8, ["modelValue", "extensions", "onReady"]);
 }
-const TextEditor = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render$1]]);
+const TextEditor = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["render", _sfc_render]]);
 const address_map = /* @__PURE__ */ new Map([
-  ["00", "nop"],
-  ["01", "sta"],
-  ["02", "lda"],
-  ["03", "add"],
-  ["04", "or"],
-  ["05", "and"],
-  ["06", "not"],
-  ["08", "jmp"],
-  ["09", "jn"],
-  ["10", "jz"],
-  ["15", "hlt"]
+  [0, "nop"],
+  [1, "sta"],
+  [2, "lda"],
+  [3, "add"],
+  [4, "or"],
+  [5, "and"],
+  [6, "not"],
+  [8, "jmp"],
+  [9, "jn"],
+  [10, "jz"],
+  [15, "hlt"]
 ]);
 class Manager {
   constructor() {
+    __publicField(this, "items", []);
+    __publicField(this, "memory", []);
+    __publicField(this, "pc", 0);
+    __publicField(this, "acc", 0);
+    __publicField(this, "z", 1);
+    __publicField(this, "n", 0);
+    __publicField(this, "end", false);
+  }
+  set acc(value) {
+    this.acc = Uint8Array.of(value);
+  }
+  setMemory(memory) {
+    this.memory = memory;
+  }
+  reset() {
+    this.memory = new Array(256).fill(0);
     this.items = [];
-    this.memory = Array(256).fill(10);
     this.pc = 0;
     this.acc = 0;
     this.z = 1;
     this.n = 0;
-    this.tracker = 0;
     this.end = false;
-  }
-  setMemory(memory) {
-    ;
-    this.memory = memory;
+    return this._getStatusResponse();
   }
   step(direction) {
     if (direction > 0) {
       if (this.end)
-        return this.items.at(-1);
-      ;
-      return this._do(this.memory[this.tracker]);
+        return this._getCurrentStatus();
+      return this._do(this.memory[this.pc]);
     } else {
-      ;
       return this._undo();
     }
   }
   _getCurrentStatus() {
-    return { acc: this.acc, pc: this.pc, memory: this.memory, end: this.end, tracker: this.tracker, z: this.z, n: this.n };
+    return { acc: Uint8Array.of(this.acc)[0], pc: this.pc, memory: this.memory, end: this.end, z: this.z, n: this.n };
   }
   _getStatusResponse() {
     return { acc: this.acc, pc: this.pc, memory: this.memory, z: this.z, n: this.n };
@@ -24781,30 +24896,26 @@ class Manager {
     if (this[functionName]) {
       this.items.push(this._getCurrentStatus());
       this[functionName].apply(this, args);
-      this.tracker += 2;
       return this._getCurrentStatus();
     }
   }
   _undo() {
     if (this.items.length <= 0)
       return this._getCurrentStatus();
-    ;
-    const { acc, pc, memory, end, tracker, z: z2, n } = this.items.pop();
-    ;
+    const { acc, pc, memory, end, z: z2, n } = this.items.pop();
     this.acc = acc;
     this.pc = pc;
     this.memory = memory;
     this.end = end;
-    this.tracker = tracker;
     this.z = z2;
     this.n = n;
     return this._getStatusResponse();
   }
-  _getMemory() {
-    return +this.memory[+this.memory[this.tracker + 1]];
+  _getFromMemory() {
+    return this.memory[this.memory[this.pc + 1]];
   }
   _setMemory(value) {
-    this.memory[+this.memory[this.tracker + 1]] = value;
+    this.memory[this.memory[this.pc + 1]] = value;
   }
   _check_z_n() {
     if (this.acc >= 128)
@@ -24821,92 +24932,138 @@ class Manager {
   }
   _sta() {
     this._setMemory(this.acc);
-    this.pc++;
+    this.pc += 2;
   }
   _lda() {
-    this.acc = this._getMemory();
+    this.acc = this._getFromMemory();
     this._check_z_n();
-    this.pc++;
+    this.pc += 2;
   }
   _add() {
-    this.acc += this._getMemory();
+    this.acc += this._getFromMemory();
     this._check_z_n();
-    this.pc++;
+    this.pc += 2;
   }
   _or() {
-    this.acc *= this._getMemory();
+    this.acc *= this._getFromMemory();
     this._check_z_n();
-    this.pc++;
+    this.pc += 2;
   }
   _and() {
-    this.acc &= this._getMemory();
+    this.acc &= this._getFromMemory();
     this._check_z_n();
-    this.pc++;
+    this.pc += 2;
   }
   _not() {
     this.acc = ~this.acc;
     this.pc++;
   }
   _jmp() {
-    this.pc = this._getMemory();
-    this.tracker = this.pc;
+    this.pc = this._getFromMemory();
   }
   _jn() {
     if (this.z) {
-      this.pc = this._getMemory();
-      this.tracker = this.pc;
+      this.pc = this._getFromMemory();
     } else
-      this.pc++;
+      this.pc += 2;
   }
   _jz() {
     if (this.n) {
-      this.pc = this._getMemory();
-      this.tracker = this.pc;
+      this.pc = this._getFromMemory();
     } else
-      this.pc++;
+      this.pc += 2;
   }
-  _hly() {
+  _hlt() {
     this.pc++;
     this.end = true;
   }
 }
-const Neander_vue_vue_type_style_index_0_scoped_4a498f2a_lang = "";
-const _withScopeId = (n) => (pushScopeId("data-v-4a498f2a"), n = n(), popScopeId(), n);
-const _hoisted_1$1 = { class: "panel" };
-const _hoisted_2 = { class: "left" };
+const Neander_vue_vue_type_style_index_0_scoped_3a1fbf75_lang = "";
+const _withScopeId = (n) => (pushScopeId("data-v-3a1fbf75"), n = n(), popScopeId(), n);
+const _hoisted_1$1 = { class: "panel prevent-select" };
+const _hoisted_2 = { class: "editor" };
 const _hoisted_3 = { class: "visor" };
 const _hoisted_4 = { class: "visor__holder" };
-const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "ACC", -1));
+const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, "ACC", -1));
 const _hoisted_6 = { class: "visor__holder" };
-const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "PC", -1));
+const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, "PC", -1));
 const _hoisted_8 = { class: "visor__holder" };
-const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "N", -1));
+const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, "N", -1));
 const _hoisted_10 = { class: "visor__holder" };
-const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Z", -1));
-const _hoisted_12 = { class: "editor" };
-const _hoisted_13 = { class: "right" };
-const _hoisted_14 = { class: "buttons" };
-const _hoisted_15 = { class: "buttons__holder" };
-const _hoisted_16 = { class: "buttons__holder buttons__holder-step" };
-const _sfc_main$3 = {
+const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", null, "Z", -1));
+const _hoisted_12 = { class: "controls" };
+const _hoisted_13 = { class: "controls__holder" };
+const _hoisted_14 = { class: "controls__holder" };
+const _hoisted_15 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("legend", null, "Escolha como executar o programa:", -1));
+const _hoisted_16 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, [
+  /* @__PURE__ */ createBaseVNode("input", {
+    type: "radio",
+    id: "pp",
+    name: "executar",
+    value: "pp",
+    checked: ""
+  }),
+  /* @__PURE__ */ createBaseVNode("label", { for: "pp" }, "Passo a passo")
+], -1));
+const _hoisted_17 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, [
+  /* @__PURE__ */ createBaseVNode("input", {
+    type: "radio",
+    id: "at",
+    name: "executar",
+    value: "at"
+  }),
+  /* @__PURE__ */ createBaseVNode("label", { for: "at" }, "Automaticamente")
+], -1));
+const _hoisted_18 = [
+  _hoisted_15,
+  _hoisted_16,
+  _hoisted_17
+];
+const _hoisted_19 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("label", { for: "time" }, "Tempo de instrução (seg):", -1));
+const _hoisted_20 = {
+  key: 0,
+  class: "controls__holder"
+};
+const _hoisted_21 = {
+  key: 1,
+  class: "controls__holder"
+};
+const _sfc_main$2 = {
   __name: "Neander",
   setup(__props) {
     const data_ref = ref(null);
     const editor_ref = ref(null);
     const acc_value = ref("0");
+    const instruction_time_ref = ref("1");
     const pc_value = ref("0");
     const n_value = ref("0");
     const z_value = ref("1");
-    const isCompiled = ref(false);
+    const instruction_mode = ref("pp");
+    ref(false);
+    const current_interval = ref(null);
+    const is_compiled = ref(false);
     let manager;
     let lastTarget;
-    function step(direction) {
-      const { acc, pc, memory, n, z: z2 } = manager.step(direction);
-      acc_value.value = acc;
-      pc_value.value = pc;
-      n_value.value = n;
-      z_value.value = z2;
-      _changeData(memory);
+    function _generateDataCells() {
+      let cellNumber = 0;
+      for (let i = 0; i < 32; i++) {
+        const holder = document.createElement("li");
+        for (let j2 = 0; j2 < 8; j2++) {
+          if (j2 % 8 == 0)
+            holder.insertAdjacentHTML(
+              "beforeend",
+              `<div class="cell indicator">
+        ${(i * 8 + j2).toString(16).padStart(2, "0").toUpperCase()}:
+        </div> <div class="spacer"></div>`
+            );
+          holder.insertAdjacentHTML(
+            "beforeend",
+            `<div data-index="${cellNumber}" contenteditable="true" class='cell'>00</div>`
+          );
+          cellNumber++;
+        }
+        data_ref.value.append(holder);
+      }
     }
     function _setCaretPosition(el, position) {
       const range = document.createRange();
@@ -24963,7 +25120,6 @@ const _sfc_main$3 = {
         target.innerHTML = "00";
     }
     function _keyDown(event) {
-      ;
       if (event.key != "Delete" && event.key != "Backspace") {
         if (!(event.key.toLowerCase().charCodeAt() >= 97 && event.key.toLowerCase().charCodeAt() <= 102 || event.key.toLowerCase().charCodeAt() >= 48 && event.key.toLowerCase().charCodeAt() <= 57))
           event.preventDefault();
@@ -24975,6 +25131,19 @@ const _sfc_main$3 = {
         _setCaretPosition(target, 3);
       }
     }
+    function _updateFromProcessor(values) {
+      acc_value.value = values.acc;
+      pc_value.value = values.pc;
+      n_value.value = values.n;
+      z_value.value = values.z;
+      _changeData(values.memory);
+    }
+    function _manageExecution() {
+      current_interval.value = setInterval(() => step(1), parseFloat(instruction_time_ref.value) * 1e3);
+    }
+    function radioChanged(event) {
+      instruction_mode.value = event.target.value;
+    }
     function manageClick({ target }) {
       const cell = target.closest(".cell");
       if (lastTarget) {
@@ -24983,138 +25152,139 @@ const _sfc_main$3 = {
       }
       if (lastTarget && lastTarget !== target)
         _resetCell(lastTarget);
-      ;
       if (!cell)
         return;
       cell.addEventListener("keydown", _keyDown);
       cell.addEventListener("keyup", _keyUp);
       lastTarget = cell;
     }
-    function generateDataCells() {
-      let cellNumber = 0;
-      for (let i = 0; i < 32; i++) {
-        const holder = document.createElement("li");
-        for (let j2 = 0; j2 < 8; j2++) {
-          if (j2 % 8 == 0)
-            holder.insertAdjacentHTML(
-              "beforeend",
-              `<div class="cell indicator">
-        ${(i * 8 + j2).toString(16).padStart(2, "0").toUpperCase()}:
-        </div> <div class="spacer"></div>`
-            );
-          holder.insertAdjacentHTML(
-            "beforeend",
-            `<div data-index="${cellNumber}" contenteditable="true" class='cell'>00</div>`
-          );
-          cellNumber++;
-        }
-        data_ref.value.append(holder);
-      }
+    function step(direction) {
+      _updateFromProcessor(manager.step(direction));
     }
     function compile2() {
       const tokens = _parse(editor_ref.value.code.trim());
       const htmlData = Array.from(
         document.querySelectorAll(".cell:not(.indicator)")
       );
-      ;
       if (tokens.length) {
         for (let index = 0; index < tokens.length; index++) {
           htmlData[index].innerHTML = tokens[index];
         }
       }
-      manager.setMemory(
-        Array.from(
-          document.querySelectorAll(".cell:not(.indicator)"),
-          (el) => el.innerHTML
-        )
-      );
-      isCompiled.value = true;
+      manager.setMemory(Uint8Array.from(document.querySelectorAll(".cell:not(.indicator)"), (el) => el.innerHTML));
+      is_compiled.value = true;
+    }
+    function reset() {
+      is_compiled.value = false;
+      _updateFromProcessor(manager.reset());
+    }
+    function run() {
+      _manageExecution();
+    }
+    function stop() {
+      clearInterval(current_interval.value);
     }
     onMounted(() => {
-      generateDataCells();
+      _generateDataCells();
       manager = new Manager();
       window.addEventListener("click", manageClick);
     });
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock(Fragment, null, [
-        createBaseVNode("div", _hoisted_1$1, [
-          createBaseVNode("div", _hoisted_2, [
-            createBaseVNode("div", _hoisted_3, [
-              createBaseVNode("div", _hoisted_4, [
-                _hoisted_5,
-                createBaseVNode("div", null, toDisplayString(acc_value.value), 1)
-              ]),
-              createBaseVNode("div", _hoisted_6, [
-                _hoisted_7,
-                createBaseVNode("div", null, toDisplayString(pc_value.value), 1)
-              ]),
-              createBaseVNode("div", _hoisted_8, [
-                _hoisted_9,
-                createBaseVNode("div", null, toDisplayString(n_value.value), 1)
-              ]),
-              createBaseVNode("div", _hoisted_10, [
-                _hoisted_11,
-                createBaseVNode("div", null, toDisplayString(z_value.value), 1)
-              ])
-            ]),
-            createBaseVNode("div", _hoisted_12, [
-              createVNode(TextEditor, {
-                ref_key: "editor_ref",
-                ref: editor_ref
-              }, null, 512)
-            ])
+      return openBlock(), createElementBlock("div", _hoisted_1$1, [
+        createBaseVNode("div", _hoisted_2, [
+          createVNode(TextEditor, {
+            ref_key: "editor_ref",
+            ref: editor_ref
+          }, null, 512)
+        ]),
+        createBaseVNode("div", _hoisted_3, [
+          createBaseVNode("div", _hoisted_4, [
+            _hoisted_5,
+            createBaseVNode("p", null, toDisplayString(acc_value.value), 1)
           ]),
-          createBaseVNode("div", _hoisted_13, [
-            createBaseVNode("ul", {
-              ref_key: "data_ref",
-              ref: data_ref
-            }, null, 512)
+          createBaseVNode("div", _hoisted_6, [
+            _hoisted_7,
+            createBaseVNode("p", null, toDisplayString(pc_value.value), 1)
+          ]),
+          createBaseVNode("div", _hoisted_8, [
+            _hoisted_9,
+            createBaseVNode("p", null, toDisplayString(n_value.value), 1)
+          ]),
+          createBaseVNode("div", _hoisted_10, [
+            _hoisted_11,
+            createBaseVNode("p", null, toDisplayString(z_value.value), 1)
           ])
         ]),
-        createBaseVNode("div", _hoisted_14, [
-          createBaseVNode("div", _hoisted_15, [
+        createBaseVNode("div", _hoisted_12, [
+          createBaseVNode("div", _hoisted_13, [
             createBaseVNode("button", {
               onClick: _cache[0] || (_cache[0] = ($event) => compile2())
-            }, "Rodar programa")
+            }, "Carregar"),
+            createBaseVNode("button", {
+              onClick: _cache[1] || (_cache[1] = ($event) => reset())
+            }, "Resetar")
           ]),
-          createBaseVNode("div", _hoisted_16, [
+          createBaseVNode("div", _hoisted_14, [
+            createBaseVNode("fieldset", {
+              onChange: _cache[2] || (_cache[2] = ($event) => radioChanged($event))
+            }, _hoisted_18, 32)
+          ]),
+          createBaseVNode("div", {
+            class: normalizeClass([{ disabled: instruction_mode.value == "pp" }, "controls__holder"])
+          }, [
+            _hoisted_19,
+            withDirectives(createBaseVNode("input", {
+              type: "number",
+              id: "time",
+              name: "time",
+              "onUpdate:modelValue": _cache[3] || (_cache[3] = ($event) => instruction_time_ref.value = $event)
+            }, null, 512), [
+              [vModelText, instruction_time_ref.value]
+            ])
+          ], 2),
+          instruction_mode.value == "pp" ? (openBlock(), createElementBlock("div", _hoisted_20, [
             createBaseVNode("button", {
-              class: normalizeClass(["button-step", { "button-active": isCompiled.value }]),
-              onClick: _cache[1] || (_cache[1] = ($event) => step(1))
-            }, "+", 2),
+              class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
+              onClick: _cache[4] || (_cache[4] = ($event) => step(-1))
+            }, " <-", 2),
             createBaseVNode("button", {
-              class: normalizeClass(["button-step", { "button-active": isCompiled.value }]),
-              onClick: _cache[2] || (_cache[2] = ($event) => step(-1))
-            }, "-", 2)
-          ])
-        ])
-      ], 64);
+              class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
+              onClick: _cache[5] || (_cache[5] = ($event) => step(1))
+            }, " ->", 2)
+          ])) : instruction_mode.value == "at" ? (openBlock(), createElementBlock("div", _hoisted_21, [
+            createBaseVNode("button", {
+              class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
+              onClick: _cache[6] || (_cache[6] = ($event) => run())
+            }, " Executar", 2),
+            createBaseVNode("button", {
+              class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
+              onClick: _cache[7] || (_cache[7] = ($event) => stop())
+            }, " Parar", 2)
+          ])) : createCommentVNode("", true)
+        ]),
+        createBaseVNode("ul", {
+          class: "data",
+          ref_key: "data_ref",
+          ref: data_ref
+        }, null, 512)
+      ]);
     };
   }
 };
-const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-4a498f2a"]]);
-const Navbar_vue_vue_type_style_index_0_scoped_40822f3c_lang = "";
-const _sfc_main$2 = {};
-function _sfc_render(_ctx, _cache) {
-  return openBlock(), createElementBlock("nav");
-}
-const Navbar = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render], ["__scopeId", "data-v-40822f3c"]]);
-const Home_vue_vue_type_style_index_0_scoped_73b8d718_lang = "";
+const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-3a1fbf75"]]);
+const Home_vue_vue_type_style_index_0_scoped_039701c4_lang = "";
 const _hoisted_1 = { class: "container" };
 const _sfc_main$1 = {
   __name: "Home",
   setup(__props) {
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock(Fragment, null, [
-        createVNode(Navbar),
-        createBaseVNode("div", _hoisted_1, [
-          createVNode(Neander)
-        ])
-      ], 64);
+      return openBlock(), createElementBlock("div", _hoisted_1, [
+        createVNode(Neander)
+      ]);
     };
   }
 };
-const Home = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-73b8d718"]]);
+const Home = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-039701c4"]]);
 const _sfc_main = {
   __name: "App",
   setup(__props) {
