@@ -1,59 +1,168 @@
-
-*, *::after, *::before{
+:root{
+    --primary-color: #ffffff;
+    --active-color: #5ff59b;
+    --button-color: #328554;
+    --panel-color: #304433;
+    --background-color: #282c34;
+}
+*, *::after, *::before {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-  
-  html, body, #app{
+}
+
+html, body, #app {
     width: 100%;
     height: 100%;
-  }
-
-  .container{
+    background-color: var(--background-color);
+}
+#app{
     padding: 1rem;
+}
+
+button, p, ul {
+    font-family: Lato, system-ui, -apple-system, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+button {
+    cursor: pointer;
+    display: inline-block;
+    min-height: 1em;
+    outline: 0;
+    border: none;
+    vertical-align: baseline;
+    background: #e0e1e2 none;
+    color: rgba(0, 0, 0, .6);
+    padding: 0.78571429em 1.5em 0.78571429em;
+    text-transform: none;
+    text-shadow: none;
+    font-weight: 700;
+    line-height: 1em;
+    font-style: normal;
+    text-align: center;
+    text-decoration: none;
+    border-radius: 0.28571429rem;
+    box-shadow: 0 0 0 1px transparent inset, 0 0 0 0 rgba(34, 36, 38, .15) inset;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    transition: opacity .1s ease, background-color .1s ease, color .1s ease, box-shadow .1s ease, background .1s ease;
+    will-change: auto;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.container {
+    padding: 0.5rem;
     width: 1227px;
     margin: 0 auto 0 auto;
-    /* border: 3px solid black; */
     display: flex;
     justify-content: center;
     align-items: flex-end;
     flex-wrap: wrap;
+    border-radius: 0.28em;
+    /*box-shadow: 0 0 00 2px var(--active-color);*/
+
 }
 
-ul{
-  list-style: none;
-}
-li{
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-li:hover{
-  background-color: rgba(0, 0, 255, 0.214);
-}
-.cell, input{
-  font-size: 22px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border-collapse: collapse;
-  cursor: pointer;
-  position: relative;
-  width: calc(100% / 9);
-  overflow: hidden;
-}
-input{
-  background-color: none;
-  border: none;
-  outline: 3px solid rgba(0, 0, 255, 0.214);
+ul {
+    list-style: none;
 }
 
-.spacer{
- width: 5px;
+li {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
+
+li:hover {
+    background-color: rgba(0, 0, 255, 0.214);
+}
+
+.cell, input {
+    font-size: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-collapse: collapse;
+    cursor: pointer;
+    position: relative;
+    width: calc(100% / 9);
+    overflow: hidden;
+}
+
+.spacer {
+    width: 5px;
+}
+
 .panel__data .cell.indicator {
-  font-weight: 800;
+    font-weight: 800;
 
-  /* border-right: 4px solid black; */
 }
+
+.prevent-select {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+
+fieldset div:first-of-type {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 5px;
+}
+
+fieldset {
+    border: none;
+}
+
+fieldset > div {
+    display: flex;
+}
+
+label {
+    margin-right: 15px;
+    line-height: 32px;
+}
+
+input {
+    margin: 0.4rem;
+}
+
+input[type="radio"] {
+    appearance: none;
+
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+
+    border: 2px solid #999;
+    transition: 0.2s all linear;
+    margin-right: 5px;
+
+    position: relative;
+    top: 4px;
+}
+
+input[type="radio"]:checked {
+    border: 6px solid #5ff59b;
+}
+
+input[type="number"] {
+    width: 100px;
+    display: inline;
+}
+label{
+    color: var(--primary-color);;
+}
+
+legend {
+    color:  var(--primary-color);;
+    /*background-color: black;*/
+    padding: 5px 10px;
+    border-radius: 0;
+    border: 0;
+    font-size: 16px;
+    font-weight: 00;
+}
+

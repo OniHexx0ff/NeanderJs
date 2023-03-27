@@ -24756,17 +24756,17 @@ class Manager {
     this.end = false;
   }
   setMemory(memory) {
-    console.log(memory);
+    ;
     this.memory = memory;
   }
   step(direction) {
     if (direction > 0) {
       if (this.end)
         return this.items.at(-1);
-      console.log(this.memory[this.tracker]);
+      ;
       return this._do(this.memory[this.tracker]);
     } else {
-      console.log(this.memory[this.tracker]);
+      ;
       return this._undo();
     }
   }
@@ -24788,9 +24788,9 @@ class Manager {
   _undo() {
     if (this.items.length <= 0)
       return this._getCurrentStatus();
-    console.log(this.items.length);
+    ;
     const { acc, pc, memory, end, tracker, z: z2, n } = this.items.pop();
-    console.log(this.items);
+    ;
     this.acc = acc;
     this.pc = pc;
     this.memory = memory;
@@ -24870,8 +24870,8 @@ class Manager {
     this.end = true;
   }
 }
-const Neander_vue_vue_type_style_index_0_scoped_0ff94583_lang = "";
-const _withScopeId = (n) => (pushScopeId("data-v-0ff94583"), n = n(), popScopeId(), n);
+const Neander_vue_vue_type_style_index_0_scoped_4a498f2a_lang = "";
+const _withScopeId = (n) => (pushScopeId("data-v-4a498f2a"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "panel" };
 const _hoisted_2 = { class: "left" };
 const _hoisted_3 = { class: "visor" };
@@ -24879,19 +24879,15 @@ const _hoisted_4 = { class: "visor__holder" };
 const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "ACC", -1));
 const _hoisted_6 = { class: "visor__holder" };
 const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "PC", -1));
-const _hoisted_8 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", { class: "visor__holder" }, [
-  /* @__PURE__ */ createBaseVNode("div", null, "N"),
-  /* @__PURE__ */ createBaseVNode("div", null, " 0 ")
-], -1));
-const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", { class: "visor__holder" }, [
-  /* @__PURE__ */ createBaseVNode("div", null, "Z"),
-  /* @__PURE__ */ createBaseVNode("div", null, " 0 ")
-], -1));
-const _hoisted_10 = { class: "editor" };
-const _hoisted_11 = { class: "right" };
-const _hoisted_12 = { class: "buttons" };
-const _hoisted_13 = { class: "buttons__holder" };
-const _hoisted_14 = { class: "buttons__holder buttons__holder-step" };
+const _hoisted_8 = { class: "visor__holder" };
+const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "N", -1));
+const _hoisted_10 = { class: "visor__holder" };
+const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Z", -1));
+const _hoisted_12 = { class: "editor" };
+const _hoisted_13 = { class: "right" };
+const _hoisted_14 = { class: "buttons" };
+const _hoisted_15 = { class: "buttons__holder" };
+const _hoisted_16 = { class: "buttons__holder buttons__holder-step" };
 const _sfc_main$3 = {
   __name: "Neander",
   setup(__props) {
@@ -24899,13 +24895,18 @@ const _sfc_main$3 = {
     const editor_ref = ref(null);
     const acc_value = ref("0");
     const pc_value = ref("0");
+    const n_value = ref("0");
+    const z_value = ref("1");
     const isCompiled = ref(false);
     let manager;
     let lastTarget;
     function step(direction) {
-      const { acc, pc, memory } = manager.step(direction);
-      this.acc_value = acc;
-      this.pc_value = pc;
+      const { acc, pc, memory, n, z: z2 } = manager.step(direction);
+      acc_value.value = acc;
+      pc_value.value = pc;
+      n_value.value = n;
+      z_value.value = z2;
+      _changeData(memory);
     }
     function _setCaretPosition(el, position) {
       const range = document.createRange();
@@ -24914,6 +24915,12 @@ const _sfc_main$3 = {
       range.collapse(true);
       sel.removeAllRanges();
       sel.addRange(range);
+    }
+    function _changeData(memory) {
+      const element = document.querySelectorAll(".cell:not(.indicator)");
+      for (let j2 = 0; j2 < memory.length; j2++) {
+        element[j2].innerHTML = String(memory[j2]).padStart(2, "0");
+      }
     }
     function _parse(str) {
       let instruction_map = /* @__PURE__ */ new Map([
@@ -24956,7 +24963,7 @@ const _sfc_main$3 = {
         target.innerHTML = "00";
     }
     function _keyDown(event) {
-      console.log(event.key.charCodeAt());
+      ;
       if (event.key != "Delete" && event.key != "Backspace") {
         if (!(event.key.toLowerCase().charCodeAt() >= 97 && event.key.toLowerCase().charCodeAt() <= 102 || event.key.toLowerCase().charCodeAt() >= 48 && event.key.toLowerCase().charCodeAt() <= 57))
           event.preventDefault();
@@ -24976,7 +24983,7 @@ const _sfc_main$3 = {
       }
       if (lastTarget && lastTarget !== target)
         _resetCell(lastTarget);
-      console.log(cell);
+      ;
       if (!cell)
         return;
       cell.addEventListener("keydown", _keyDown);
@@ -25009,7 +25016,7 @@ const _sfc_main$3 = {
       const htmlData = Array.from(
         document.querySelectorAll(".cell:not(.indicator)")
       );
-      console.log(tokens);
+      ;
       if (tokens.length) {
         for (let index = 0; index < tokens.length; index++) {
           htmlData[index].innerHTML = tokens[index];
@@ -25041,30 +25048,36 @@ const _sfc_main$3 = {
                 _hoisted_7,
                 createBaseVNode("div", null, toDisplayString(pc_value.value), 1)
               ]),
-              _hoisted_8,
-              _hoisted_9
+              createBaseVNode("div", _hoisted_8, [
+                _hoisted_9,
+                createBaseVNode("div", null, toDisplayString(n_value.value), 1)
+              ]),
+              createBaseVNode("div", _hoisted_10, [
+                _hoisted_11,
+                createBaseVNode("div", null, toDisplayString(z_value.value), 1)
+              ])
             ]),
-            createBaseVNode("div", _hoisted_10, [
+            createBaseVNode("div", _hoisted_12, [
               createVNode(TextEditor, {
                 ref_key: "editor_ref",
                 ref: editor_ref
               }, null, 512)
             ])
           ]),
-          createBaseVNode("div", _hoisted_11, [
+          createBaseVNode("div", _hoisted_13, [
             createBaseVNode("ul", {
               ref_key: "data_ref",
               ref: data_ref
             }, null, 512)
           ])
         ]),
-        createBaseVNode("div", _hoisted_12, [
-          createBaseVNode("div", _hoisted_13, [
+        createBaseVNode("div", _hoisted_14, [
+          createBaseVNode("div", _hoisted_15, [
             createBaseVNode("button", {
               onClick: _cache[0] || (_cache[0] = ($event) => compile2())
             }, "Rodar programa")
           ]),
-          createBaseVNode("div", _hoisted_14, [
+          createBaseVNode("div", _hoisted_16, [
             createBaseVNode("button", {
               class: normalizeClass(["button-step", { "button-active": isCompiled.value }]),
               onClick: _cache[1] || (_cache[1] = ($event) => step(1))
@@ -25079,7 +25092,7 @@ const _sfc_main$3 = {
     };
   }
 };
-const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-0ff94583"]]);
+const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-4a498f2a"]]);
 const Navbar_vue_vue_type_style_index_0_scoped_40822f3c_lang = "";
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {

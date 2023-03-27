@@ -1,147 +1,160 @@
 const address_map = new Map([
-    ["00", "nop"],
-    ["01", "sta"],
-    ["02", "lda"],
-    ["03", "add"],
-    ["04", "or"],
-    ["05", "and"],
-    ["06", "not"],
-    ["08", "jmp"],
-    ["09", "jn"],
-    ["10", "jz"],
-    ["15", "hlt"],
-  ]);
+    [0, "nop"],
+    [1, "sta"],
+    [2, "lda"],
+    [3, "add"],
+    [4, "or"],
+    [5, "and"],
+    [6, "not"],
+    [8, "jmp"],
+    [9, "jn"],
+    [10, "jz"],
+    [15, "hlt"],
+]);
 
-class Manager{
-    constructor(){
+class Manager {
+    items = []
+    memory = []
+    pc = 0
+    acc = 0
+    z = 1
+    n = 0
+    end = false
+
+    set acc(value) {
+        this.acc = Uint8Array.of(value)
+    }
+
+    setMemory(memory) {
+        this.memory = memory
+    }
+
+    reset(){
+        this.memory = new Array(256).fill(0)
         this.items = []
-        this.memory = Array(256).fill(10)
         this.pc = 0
         this.acc = 0
         this.z = 1
         this.n = 0
-        this.tracker = 0
         this.end = false
+        return this._getStatusResponse()
     }
 
-
-    setMemory(memory){
-        console.log(memory)
-        this.memory = memory
-    }
-
-
-    step(direction){
-        if(direction > 0) {
-            if (this.end) return this.items.at(-1)
-            console.log(this.memory[this.tracker])
-            return this._do(this.memory[this.tracker])
-        }
-        else{
-            console.log(this.memory[this.tracker])
+    step(direction) {
+        if (direction > 0) {
+            if (this.end) return this._getCurrentStatus()
+            return this._do(this.memory[this.pc])
+        } else {
             return this._undo()
         }
     }
-    _getCurrentStatus(){
-        return {acc: this.acc, pc : this.pc, memory: this.memory, end: this.end, tracker: this.tracker, z: this.z, n: this.n}
-    }
-    _getStatusResponse(){
-        return {acc: this.acc, pc : this.pc, memory: this.memory, z: this.z, n: this.n}
+
+    _getCurrentStatus() {
+        return {acc: Uint8Array.of(this.acc)[0], pc: this.pc, memory: this.memory, end: this.end, z: this.z, n: this.n}
     }
 
-    _do(name , ...args){
+    _getStatusResponse() {
+        return {acc: this.acc, pc: this.pc, memory: this.memory, z: this.z, n: this.n}
+    }
+
+    _do(name, ...args) {
         const functionName = "_" + address_map.get(name);
-        if(this[functionName]) {
+        if (this[functionName]) {
             this.items.push(this._getCurrentStatus())
             this[functionName].apply(this, args)
-            this.tracker+=2 ;
+
             return this._getCurrentStatus()
         }
     }
-    _undo(){
-        if(this.items.length <= 0) return this._getCurrentStatus()  
-        console.log(this.items.length)
-        const {acc, pc, memory, end, tracker, z, n} = this.items.pop()
-        console.log(this.items)
+
+    _undo() {
+        if (this.items.length <= 0) return this._getCurrentStatus()
+        const {acc, pc, memory, end, z, n} = this.items.pop()
         this.acc = acc
         this.pc = pc
         this.memory = memory
         this.end = end
-        this.tracker = tracker
         this.z = z
         this.n = n
         return this._getStatusResponse()
     }
-  
-    _getMemory(){
-        return +this.memory[+this.memory[this.tracker +1]]
+
+    _getFromMemory() {
+        return this.memory[this.memory[this.pc + 1]]
     }
-    _setMemory(value){
-        this.memory[+this.memory[this.tracker +1]] = value
+
+    _setMemory(value) {
+        this.memory[this.memory[this.pc + 1]] = value
     }
-    _check_z_n(){
-        if(this.acc >= 128) this.n = 1
+
+    _check_z_n() {
+        if (this.acc >= 128) this.n = 1
         else this.n = 0
 
-        if(this.acc == 0) this.z = 1
+        if (this.acc==0) this.z = 1
         else this.z = 0
     }
-    _nop(){
+
+    _nop() {
         this.pc++
     }
-    _sta(){
-        this._setMemory(this.acc)   
-        this.pc++
+
+    _sta() {
+        this._setMemory(this.acc)
+        this.pc += 2
     }
-    _lda(){
-        this.acc = this._getMemory()
+
+    _lda() {
+        this.acc = this._getFromMemory()
         this._check_z_n()
-        this.pc++
+        this.pc += 2
     }
-    _add(){
-        this.acc += this._getMemory()
+
+    _add() {
+        this.acc += this._getFromMemory()
         this._check_z_n()
-        this.pc++
+        this.pc += 2
     }
-    _or(){
-        this.acc *= this._getMemory()
+
+    _or() {
+        this.acc *= this._getFromMemory()
         this._check_z_n()
-        this.pc++
+        this.pc += 2
     }
-    _and(){
-        this.acc &= this._getMemory()
+
+    _and() {
+        this.acc &= this._getFromMemory()
         this._check_z_n()
+        this.pc += 2
+    }
+
+    _not() {
+        this.acc = ~this.acc
         this.pc++
     }
-    _not(){
-        this.acc = ~this.acc 
-        this.pc++
+
+    _jmp() {
+        this.pc = this._getFromMemory()
     }
-    _jmp(){
-        this.pc = this._getMemory()
-        this.tracker = this.pc
+
+    _jn() {
+        if (this.z) {
+            this.pc = this._getFromMemory()
+        } else this.pc += 2
     }
-    _jn(){
-        if(this.z){
-        this.pc = this._getMemory()
-        this.tracker = this.pc
-        } 
-        else this.pc++
+
+    _jz() {
+        if (this.n) {
+            this.pc = this._getFromMemory()
+        } else this.pc += 2
     }
-    _jz(){
-        if(this.n) 
-        {
-            this.pc = this._getMemory()
-            this.tracker =  this.pc
-        }
-        else this.pc++
-    }
-    _hly(){
+
+    _hlt() {
         this.pc++
         this.end = true
     }
 
-    
+
 }
 
 export default Manager

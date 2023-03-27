@@ -1,6 +1,6 @@
 
 <template>
-    <Navbar />
+
     <div class="container">
         <Neander />
     </div>
@@ -8,7 +8,7 @@
 
 <script setup>
  import Neander from './Neander.vue';
- import Navbar from './Navbar.vue'
+
 </script>
 
 <style scoped>
