@@ -276,7 +276,6 @@ onMounted(() => {
 .panel {
   width: 100%;
   height: 1000px;
-  /*background-color: white;*/
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -292,7 +291,6 @@ onMounted(() => {
   flex-basis: 70%;
   height: 100%;
   width: 100%;
-  background-color: gray;
   overflow-y: scroll;
   grid-column: 1/3;
   grid-row: 2/4;
@@ -321,7 +319,7 @@ onMounted(() => {
   flex-wrap: wrap;
   height: 100%;
   width: fit-content;
-  overflow: scroll;
+  overflow-y: scroll;
   background-color: var(--panel-color);
   color: var(--primary-color);
   grid-row: 1/4;
