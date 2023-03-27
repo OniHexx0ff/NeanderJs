@@ -24978,8 +24978,8 @@ class Manager {
     this.end = true;
   }
 }
-const Neander_vue_vue_type_style_index_0_scoped_3a1fbf75_lang = "";
-const _withScopeId = (n) => (pushScopeId("data-v-3a1fbf75"), n = n(), popScopeId(), n);
+const Neander_vue_vue_type_style_index_0_scoped_8602d268_lang = "";
+const _withScopeId = (n) => (pushScopeId("data-v-8602d268"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "panel prevent-select" };
 const _hoisted_2 = { class: "editor" };
 const _hoisted_3 = { class: "visor" };
@@ -25024,7 +25024,41 @@ const _hoisted_20 = {
   key: 0,
   class: "controls__holder"
 };
-const _hoisted_21 = {
+const _hoisted_21 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  fill: "none",
+  viewBox: "0 0 24 24",
+  strokeWidth: "{1.5}",
+  stroke: "currentColor",
+  className: "w-6 h-6"
+}, [
+  /* @__PURE__ */ createBaseVNode("path", {
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    d: "M19.5 12h-15m0 0l6.75 6.75M4.5 12l6.75-6.75"
+  })
+], -1));
+const _hoisted_22 = [
+  _hoisted_21
+];
+const _hoisted_23 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
+  xmlns: "http://www.w3.org/2000/svg",
+  fill: "none",
+  viewBox: "0 0 24 24",
+  strokeWidth: "{1.5}",
+  stroke: "currentColor",
+  className: "w-6 h-6"
+}, [
+  /* @__PURE__ */ createBaseVNode("path", {
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    d: "M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"
+  })
+], -1));
+const _hoisted_24 = [
+  _hoisted_23
+];
+const _hoisted_25 = {
   key: 1,
   class: "controls__holder"
 };
@@ -25246,18 +25280,18 @@ const _sfc_main$2 = {
             createBaseVNode("button", {
               class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
               onClick: _cache[4] || (_cache[4] = ($event) => step(-1))
-            }, " <-", 2),
+            }, _hoisted_22, 2),
             createBaseVNode("button", {
               class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
               onClick: _cache[5] || (_cache[5] = ($event) => step(1))
-            }, " ->", 2)
-          ])) : instruction_mode.value == "at" ? (openBlock(), createElementBlock("div", _hoisted_21, [
+            }, _hoisted_24, 2)
+          ])) : instruction_mode.value == "at" ? (openBlock(), createElementBlock("div", _hoisted_25, [
             createBaseVNode("button", {
-              class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
+              class: normalizeClass({ disabled: !is_compiled.value }),
               onClick: _cache[6] || (_cache[6] = ($event) => run())
             }, " Executar", 2),
             createBaseVNode("button", {
-              class: normalizeClass(["button-step", { disabled: !is_compiled.value }]),
+              class: normalizeClass({ disabled: !is_compiled.value }),
               onClick: _cache[7] || (_cache[7] = ($event) => stop())
             }, " Parar", 2)
           ])) : createCommentVNode("", true)
@@ -25271,7 +25305,7 @@ const _sfc_main$2 = {
     };
   }
 };
-const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-3a1fbf75"]]);
+const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-8602d268"]]);
 const Home_vue_vue_type_style_index_0_scoped_039701c4_lang = "";
 const _hoisted_1 = { class: "container" };
 const _sfc_main$1 = {
