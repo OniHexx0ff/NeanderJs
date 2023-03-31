@@ -385,4 +385,67 @@ button {
   opacity: 0.6;
 }
 
+@media only screen and (max-width: 720px)  {
+  .panel{
+    grid-template-rows: repeat(3, 1fr);
+  }
+  .visor{
+    grid-column: 1/1;
+    /*width: fit-content;*/
+  }
+  .visor__holder{
+    font-size: 30px;
+    width: 100px;
+  }
+  .controls{
+    grid-column: 2 / 4;
+    grid-row: 1/1;
+  }
+  .editor{
+    grid-column: 1 / 4;
+    grid-row: 2/3;
+  }
+  .data{
+    grid-column: 1/ 4;
+    grid-row: 3/4;
+
+  }
+  .panel{
+    overflow: hidden;
+  }
+}
+
+@media only screen and (max-width: 460px)  {
+  .panel{
+    grid-template-rows: repeat(6,1fr);
+  }
+  .visor{
+    grid-column: 1/4;
+    grid-row: 1/1;
+    /*width: fit-content;*/
+
+    height: 200px;
+  }
+  .visor__holder{
+    font-size: 30px;
+    width: 400px;
+    height: 30px;
+  }
+  .controls{
+    grid-column: 1 / 4;
+    grid-row: 2/2;
+  }
+  .editor{
+    grid-column: 1 / 4;
+    grid-row: 3/5;
+  }
+  .data{
+    grid-column: 1 / 4;
+    grid-row: 5/7;
+
+  }
+  .panel{
+    overflow: hidden;
+  }
+}
 </style>

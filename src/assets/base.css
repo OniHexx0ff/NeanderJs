@@ -18,6 +18,8 @@ html, body, #app {
 }
 #app{
     padding: 1rem;
+    overflow-x: hidden;
+    overflow-y: scroll;
 }
 
 button, p, ul {
@@ -186,4 +188,8 @@ legend {
     font-size: 16px;
     font-weight: 00;
 }
-
+@media only screen and (max-width: 720px) {
+    .container {
+        width: auto;
+    }
+}

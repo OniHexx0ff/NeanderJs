@@ -1,7 +1,7 @@
 <template>
   <codemirror
     v-model="code"
-    placeholder="Digite seu código aqui..."
+    placeholder="Digite aqui..."
     :style="{ height: '100%', backgroundColor: 'black', color: 'white', fontSize:'25px' }"
     :autofocus="true"
     :indent-with-tab="true"
