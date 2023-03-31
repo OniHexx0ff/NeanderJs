@@ -24827,7 +24827,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createBlock(_component_codemirror, {
     modelValue: _ctx.code,
     "onUpdate:modelValue": _cache[0] || (_cache[0] = ($event) => _ctx.code = $event),
-    placeholder: "Digite seu código aqui...",
+    placeholder: "Digite aqui...",
     style: { height: "100%", backgroundColor: "black", color: "white", fontSize: "25px" },
     autofocus: true,
     "indent-with-tab": true,
@@ -24978,8 +24978,8 @@ class Manager {
     this.end = true;
   }
 }
-const Neander_vue_vue_type_style_index_0_scoped_8602d268_lang = "";
-const _withScopeId = (n) => (pushScopeId("data-v-8602d268"), n = n(), popScopeId(), n);
+const Neander_vue_vue_type_style_index_0_scoped_1c884e44_lang = "";
+const _withScopeId = (n) => (pushScopeId("data-v-1c884e44"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "panel prevent-select" };
 const _hoisted_2 = { class: "editor" };
 const _hoisted_3 = { class: "visor" };
@@ -25305,7 +25305,7 @@ const _sfc_main$2 = {
     };
   }
 };
-const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-8602d268"]]);
+const Neander = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-1c884e44"]]);
 const Home_vue_vue_type_style_index_0_scoped_039701c4_lang = "";
 const _hoisted_1 = { class: "container" };
 const _sfc_main$1 = {
